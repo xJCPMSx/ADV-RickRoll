@@ -78,10 +78,11 @@ Abaixo estão detalhadas todas as alterações efetuadas em cada arquivo do proj
    - Vinculado com sucesso ao repositório público: `https://github.com/xJCPMSx/ADV-RickRoll.git`.
 2. **Commit e Push:**
    - Todos os arquivos do projeto foram adicionados e enviados para a branch `main`.
-3. **Criação da Release no GitHub:**
-   - A Release [v1.0.0](https://github.com/xJCPMSx/ADV-RickRoll/releases/tag/v1.0.0) foi publicada com o binário `rr.zip` anexado como asset oficial.
+3. **Criação das Releases no GitHub:**
+   - A Release [v1.0.0](https://github.com/xJCPMSx/ADV-RickRoll/releases/tag/v1.0.0) foi publicada inicialmente com a reconstrução do projeto.
+   - A Release [v1.1.0](https://github.com/xJCPMSx/ADV-RickRoll/releases/tag/v1.1.0) foi publicada formalizando a unificação do StageOne, com o novo asset oficial `rr.zip` (contendo o script corrigido com verificação de tipo).
 4. **Validação de Conectividade:**
-   - O endpoint direto `https://raw.githubusercontent.com/xJCPMSx/ADV-RickRoll/main/rr.zip` foi testado via requisição HTTP e retornou status `HTTP/2 200 OK` (10.138.672 bytes), confirmando que o download está totalmente funcional.
+   - O endpoint direto `https://raw.githubusercontent.com/xJCPMSx/ADV-RickRoll/main/rr.zip` foi testado via requisição HTTP e retornou status `HTTP/2 200 OK` (10.138.698 bytes), confirmando que o download está totalmente funcional.
 
 ---
 
@@ -140,3 +141,6 @@ Manter `StageOne.txt` como um arquivo separado no repositório era desnecessári
 5. **Atualização da Documentação (`ReadMe.md` e `DOCUMENTACAO.md`):**
    - Atualizados os exemplos de comando de execução para o formato unificado.
    - Documentada a remoção e o motivo da unificação.
+
+6. **Publicação da Release v1.1.0 no GitHub:**
+   - Publicada a nova versão [v1.1.0](https://github.com/xJCPMSx/ADV-RickRoll/releases/tag/v1.1.0) com notas detalhadas e o asset binário oficial `rr.zip` atualizado.

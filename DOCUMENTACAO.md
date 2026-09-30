@@ -72,17 +72,16 @@ Abaixo estão detalhadas todas as alterações efetuadas em cada arquivo do proj
 
 ---
 
-## 4. O Que Está Sendo Feito Agora (Próximos Passos de Publicação)
+## 4. Status de Publicação e Validação Concluídos
 
-1. **Inicialização do Repositório Git Local:**
-   - Adicionar os arquivos ao versionamento Git local.
-   - Definir a branch padrão como `main`.
-2. **Vinculação com o Repositório Remoto:**
-   - Vincular ao repositório público já existente na conta: `https://github.com/xJCPMSx/ADV-RickRoll.git`.
-3. **Publicação (Push):**
-   - Realizar o commit inicial e o envio dos arquivos para o GitHub.
-4. **(Opcional) Criação de Release no GitHub:**
-   - Publicar a Release `v1.0.0` com o arquivo `rr.zip` anexado como asset oficial.
+1. **Repositório Git Inicializado e Vinculado:**
+   - Vinculado com sucesso ao repositório público: `https://github.com/xJCPMSx/ADV-RickRoll.git`.
+2. **Commit e Push:**
+   - Todos os arquivos do projeto foram adicionados e enviados para a branch `main`.
+3. **Criação da Release no GitHub:**
+   - A Release [v1.0.0](https://github.com/xJCPMSx/ADV-RickRoll/releases/tag/v1.0.0) foi publicada com o binário `rr.zip` anexado como asset oficial.
+4. **Validação de Conectividade:**
+   - O endpoint direto `https://raw.githubusercontent.com/xJCPMSx/ADV-RickRoll/main/rr.zip` foi testado via requisição HTTP e retornou status `HTTP/2 200 OK` (10.138.672 bytes), confirmando que o download está totalmente funcional.
 
 ---
 

